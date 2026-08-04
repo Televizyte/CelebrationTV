@@ -1,0 +1,40 @@
+
+# Flutter and Dart generated files
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Android generated and local files
+android/.gradle/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+
+# IDE and operating-system files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Environment and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Temporary and historical files
+*.bak
+*.bak_*
+*.before_*
+*.save
+*.tmp
+*.tar
+*.tar.gz
+*.zip

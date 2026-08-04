@@ -1,0 +1,1 @@
+Put your splash and banner images here or use Firebase Storage URLs.

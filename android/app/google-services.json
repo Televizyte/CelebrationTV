@@ -1,0 +1,31 @@
+{
+  "project_info": {
+    "project_number": "655603186174",
+    "firebase_url": "https://celebration-tv-default-rtdb.firebaseio.com",
+    "project_id": "celebration-tv",
+    "storage_bucket": "celebration-tv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:655603186174:android:cc55e60a318578e49da8af",
+        "android_client_info": {
+          "package_name": "com.digitxtramedia.celebrationtv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgGl0ecIjaeJqsE0_tOfPZkPHtWT0LB-o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      },
+      "admob_app_id": "ca-app-pub-4171224553175356~5152707997"
+    }
+  ],
+  "configuration_version": "1"
+}

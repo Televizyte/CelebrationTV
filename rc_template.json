@@ -1,0 +1,46 @@
+{
+  "hero": {
+    "title": "You are WELCOME \u2014 ENJOY",
+    "image": "https://your-cdn/splash.png",
+    "ctaText": "Watch Live",
+    "ctaLink": "celebrationtv://live"
+  },
+  "live": {
+    "primaryUrl": "https://youtube.com/live/XXXXXXXXXXX",
+    "fallbacks": [
+      "https://youtu.be/YYYYYYYYYYY"
+    ]
+  },
+  "playlists": [
+    {
+      "title": "Wonders Without Number",
+      "ytPlaylistUrl": "https://www.youtube.com/watch?v=lpoPLu0ZKbw&list=PLsFcFNo2Ku195oYSrNqDNAPXrQH4bjMik"
+    },
+    {
+      "title": "AJS Words of Fire",
+      "ytPlaylistUrl": "https://youtube.com/playlist?list=PLsFcFNo2Ku18l1bfe-EzjQ-oKnF8hMhlr"
+    },
+    {
+      "title": "Inspirational Drive",
+      "ytPlaylistUrl": "https://youtube.com/playlist?list=PLsFcFNo2Ku19YSg6RdsZzvPNhs7Zp_1wR"
+    }
+  ],
+  "webLinks": [
+    {
+      "title": "OFM Website",
+      "url": "https://your-site"
+    },
+    {
+      "title": "Blog",
+      "url": "https://your-blog"
+    }
+  ],
+  "ads": {
+    "enableBanner": true,
+    "enableNative": true,
+    "enableInterstitial": true,
+    "nativeFrequency": 4,
+    "interstitialCooldownSec": 30,
+    "appOpen": false
+  }
+}
