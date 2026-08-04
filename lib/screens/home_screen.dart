@@ -21,7 +21,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _prepareNativeAds();
-    _banner = AdMobService.instance.createBanner()..load();
+    final banner = AdMobService.instance.createBanner();
+    _banner = banner;
+    banner?.load();
   }
 
   void _prepareNativeAds() {
@@ -65,7 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
           leading: const Icon(Icons.playlist_play),
           title: Text(p['title'] ?? 'Playlist'),
           onTap: () {
-            AdMobService.instance.maybeShowInterstitial(context, reason: 'open_playlist');
+            AdMobService.instance
+                .maybeShowInterstitial(context, reason: 'open_playlist');
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => VideosScreen(initialUrl: p['ytPlaylistUrl']),
@@ -75,7 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
 
-      final shouldInsertNative = rc.enableNative && nFreq > 0 && ((i + 1) % nFreq == 0);
+      final shouldInsertNative =
+          rc.enableNative && nFreq > 0 && ((i + 1) % nFreq == 0);
       if (shouldInsertNative && nativeIndex < _nativeAds.length) {
         final idx = nativeIndex++; // pick next preloaded ad
         tiles.add(

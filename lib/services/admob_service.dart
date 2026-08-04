@@ -1,7 +1,5 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'remote_config_service.dart';
 
 class AdMobService {
@@ -42,7 +40,8 @@ class AdMobService {
 
   void maybeShowInterstitial(BuildContext context, {String reason = 'nav'}) {
     if (!RemoteConfigService().enableInterstitial) return;
-    final cooldown = Duration(seconds: RemoteConfigService().interstitialCooldownSec);
+    final cooldown =
+        Duration(seconds: RemoteConfigService().interstitialCooldownSec);
     final now = DateTime.now();
     if (_interstitial != null && now.difference(_lastShown) >= cooldown) {
       _interstitial!.fullScreenContentCallback = FullScreenContentCallback(
@@ -72,7 +71,9 @@ class AdMobService {
     );
   }
 
-  NativeAd? createNative({required void Function() onLoaded, required void Function(LoadAdError) onFailed}) {
+  NativeAd? createNative(
+      {required void Function() onLoaded,
+      required void Function(LoadAdError) onFailed}) {
     if (!RemoteConfigService().enableNative) return null;
     return NativeAd(
       adUnitId: nativeId,
