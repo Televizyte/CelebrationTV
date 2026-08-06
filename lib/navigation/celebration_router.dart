@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../features/appshub/bootstrap_store.dart';
+import '../features/devotional/models/devotional_destination.dart';
+import '../features/devotional/models/devotional_hub_config.dart';
+import '../features/devotional/screens/devotional_hub_screen.dart';
+import '../features/devotional/screens/devotional_quiz_screen.dart';
+import '../features/devotional/screens/devotional_quotes_screen.dart';
+import '../features/devotional/screens/devotional_read_screen.dart';
+import '../features/devotional/screens/devotional_watch_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/inspire_screen.dart';
 import '../screens/live_screen.dart';
@@ -78,16 +85,14 @@ class CelebrationRouterDelegate extends RouterDelegate<CelebrationRoutePath>
             selectedTab: owner,
             tabs: AppTabContract.resolve(bootstrapStore.bootstrap),
             onSelectTab: selectTab,
+            onNavigate: navigate,
           ),
         ),
         if (!isRoot)
           MaterialPage<void>(
             key: ValueKey<String>('destination:$_location'),
             child: known
-                ? EnginePlaceholderScreen(
-                    route: _location,
-                    onClose: () => selectTab(owner),
-                  )
+                ? _buildDestination(owner)
                 : UnknownRouteScreen(
                     route: _location,
                     onClose: () => selectTab(CanonicalTab.home),
@@ -100,6 +105,64 @@ class CelebrationRouterDelegate extends RouterDelegate<CelebrationRoutePath>
         }
       },
     );
+  }
+
+  Widget _buildDestination(CanonicalTab owner) {
+    final route = AppRouteContract.devotionalRoute(_location);
+    if (route == null) {
+      return EnginePlaceholderScreen(
+        route: _location,
+        onClose: () => selectTab(owner),
+      );
+    }
+
+    final config = DevotionalHubConfig.resolve(bootstrapStore.bootstrap);
+    if (!config.visible || route.slug != config.slug) {
+      return UnknownRouteScreen(
+        route: _location,
+        onClose: () => selectTab(CanonicalTab.inspire),
+      );
+    }
+    if (route.destinationType == null) {
+      return DevotionalHubScreen(
+        config: config,
+        onNavigate: navigate,
+        onBack: () => selectTab(CanonicalTab.inspire),
+      );
+    }
+
+    final destination = config.destination(route.destinationType!);
+    if (destination == null || !destination.visible) {
+      return UnknownRouteScreen(
+        route: _location,
+        onClose: () => navigate('/devotionals/${config.slug}'),
+      );
+    }
+    final back = () => navigate('/devotionals/${config.slug}');
+    switch (destination.engineType) {
+      case DevotionalEngineType.read:
+        return DevotionalReadScreen(
+          destination: destination,
+          onBack: back,
+          onNavigate: navigate,
+        );
+      case DevotionalEngineType.watch:
+        return DevotionalWatchScreen(destination: destination, onBack: back);
+      case DevotionalEngineType.quotes:
+        return DevotionalQuotesScreen(
+          destination: destination,
+          onBack: back,
+          onNavigate: navigate,
+        );
+      case DevotionalEngineType.quiz:
+        return DevotionalQuizScreen(
+          destination: destination,
+          capabilityEnabled: config.quizCapabilityEnabled(
+            bootstrapStore.bootstrap,
+          ),
+          onBack: back,
+        );
+    }
   }
 
   void _onBootstrapChanged() => notifyListeners();
@@ -115,12 +178,14 @@ class CelebrationShell extends StatelessWidget {
   final CanonicalTab selectedTab;
   final List<AppTabContract> tabs;
   final ValueChanged<CanonicalTab> onSelectTab;
+  final ValueChanged<String> onNavigate;
 
   const CelebrationShell({
     super.key,
     required this.selectedTab,
     required this.tabs,
     required this.onSelectTab,
+    required this.onNavigate,
   });
 
   @override
@@ -137,12 +202,12 @@ class CelebrationShell extends StatelessWidget {
     return Scaffold(
       body: IndexedStack(
         index: CanonicalTab.values.indexOf(effectiveSelection),
-        children: const <Widget>[
-          HomeScreen(),
-          LiveScreen(),
-          InspireScreen(),
-          _ExploreRootScreen(),
-          MoreScreen(),
+        children: <Widget>[
+          const HomeScreen(),
+          const LiveScreen(),
+          InspireScreen(onNavigate: onNavigate),
+          const _ExploreRootScreen(),
+          const MoreScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(

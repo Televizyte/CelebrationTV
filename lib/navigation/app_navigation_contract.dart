@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../features/appshub/bootstrap_models.dart';
+import '../features/devotional/models/devotional_destination.dart';
 
 enum CanonicalTab {
   home('home', '/', 'Home', Icons.home_outlined),
@@ -145,7 +146,25 @@ abstract final class AppRouteContract {
   static bool isKnown(String path) {
     final normalized = normalize(path);
     return rootPaths.contains(normalized) ||
-        placeholderPaths.contains(normalized);
+        placeholderPaths.contains(normalized) ||
+        devotionalRoute(normalized) != null;
+  }
+
+  static DevotionalRouteMatch? devotionalRoute(String path) {
+    final normalized = normalize(path);
+    final match = RegExp(
+      r'^/devotionals/([a-z0-9]+(?:-[a-z0-9]+)*)(?:/(read|watch|quotes|quiz))?$',
+    ).firstMatch(normalized);
+    if (match == null) return null;
+    final suffix = match.group(2);
+    final type = switch (suffix) {
+      'read' => DevotionalEngineType.read,
+      'watch' => DevotionalEngineType.watch,
+      'quotes' => DevotionalEngineType.quotes,
+      'quiz' => DevotionalEngineType.quiz,
+      _ => null,
+    };
+    return DevotionalRouteMatch(slug: match.group(1)!, destinationType: type);
   }
 
   static CanonicalTab ownerOf(String path) {
@@ -154,7 +173,8 @@ abstract final class AppRouteContract {
     if (root != null) return root;
     if (normalized.startsWith('/articles') ||
         normalized.startsWith('/short-videos') ||
-        normalized.startsWith('/quotes')) {
+        normalized.startsWith('/quotes') ||
+        normalized.startsWith('/devotionals')) {
       return CanonicalTab.inspire;
     }
     if (normalized.startsWith('/tools') ||
@@ -165,6 +185,16 @@ abstract final class AppRouteContract {
     }
     return CanonicalTab.more;
   }
+}
+
+class DevotionalRouteMatch {
+  final String slug;
+  final DevotionalEngineType? destinationType;
+
+  const DevotionalRouteMatch({
+    required this.slug,
+    required this.destinationType,
+  });
 }
 
 String _text(dynamic value) => value?.toString().trim() ?? '';
