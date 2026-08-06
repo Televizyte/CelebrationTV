@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter/services.dart';
 
 import 'config/celebration_config.dart';
 import 'features/appshub/appshub_client.dart';
@@ -15,6 +16,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: CelebrationConfig.primaryRoyalBlue,
+      systemNavigationBarColor: CelebrationConfig.primaryRoyalBlue,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
   await Firebase.initializeApp();
   MobileAds.instance.initialize();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -87,6 +96,7 @@ class _CelebrationTvAppState extends State<CelebrationTvApp> {
       store: widget.bootstrapStore,
       child: MaterialApp.router(
         title: CelebrationConfig.appName,
+        color: CelebrationConfig.primaryRoyalBlue,
         theme: theme,
         routerDelegate: _routerDelegate,
         routeInformationParser: _routeInformationParser,

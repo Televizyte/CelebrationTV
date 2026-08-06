@@ -14,6 +14,9 @@ abstract final class CelebrationConfig {
 
   static const primaryRoyalBlue = Color(0xFF0D47A1);
   static const secondaryGold = Color(0xFFFFC107);
+  static const tagline = 'Revealing Jesus. Releasing Destinies';
+  static const logoAssetPath = 'assets/branding/celebration_tv_logo.png';
+  static const splashAssetPath = 'assets/branding/celebration_tv_splash.jpg';
 
   static const cacheNamespace = 'dxm.$appSlug';
   static const bootstrapCacheKey = '$cacheNamespace.hub.bootstrap.cache.v1';
@@ -29,6 +32,9 @@ abstract final class CelebrationConfig {
     'branding': <String, dynamic>{
       'primary_color': '#0D47A1',
       'secondary_color': '#FFC107',
+      'tagline': tagline,
+      'logo_asset': logoAssetPath,
+      'splash_asset': splashAssetPath,
     },
     'capabilities': <String, dynamic>{},
     'feature_flags': <String, dynamic>{},
