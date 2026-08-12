@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import '../services/remote_config_service.dart';
-import '../services/admob_service.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../features/appshub/bootstrap_store.dart';
+import '../features/hub/renderer/hub_section_renderer.dart';
+import '../services/admob_service.dart';
+
 class LiveScreen extends StatefulWidget {
-  const LiveScreen({super.key});
+  final ValueChanged<String> onNavigate;
+
+  const LiveScreen({super.key, required this.onNavigate});
 
   @override
   State<LiveScreen> createState() => _LiveScreenState();
 }
 
 class _LiveScreenState extends State<LiveScreen> {
-  final rc = RemoteConfigService();
   BannerAd? _banner;
 
   @override
@@ -30,29 +32,53 @@ class _LiveScreenState extends State<LiveScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primary = rc.livePrimary;
-    final fallback = rc.liveFallbacks.isNotEmpty ? rc.liveFallbacks.first : "https://youtube.com";
-    final url = primary.isNotEmpty ? primary : fallback;
-
-    final controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(url));
-
+    final store = CelebrationBootstrapScope.of(context);
+    final sections = store.hub('watch').sections;
     return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Live')),
-        body: Column(
-          children: [
-            Expanded(child: WebViewWidget(controller: controller)),
-            if (_banner != null)
-              SizedBox(
-                height: _banner!.size.height.toDouble(),
-                width: _banner!.size.width.toDouble(),
-                child: AdWidget(ad: _banner!),
-              ),
-          ],
-        ),
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            child: sections.isEmpty
+                ? _WatchEmptyState(refreshing: store.hubRefreshing('watch'))
+                : RefreshIndicator(
+                    onRefresh: () => store.refreshHub('watch'),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.only(top: 14, bottom: 24),
+                      itemCount: sections.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 22),
+                      itemBuilder: (_, index) => HubSectionRenderer(
+                        section: sections[index],
+                        onNavigate: widget.onNavigate,
+                      ),
+                    ),
+                  ),
+          ),
+          if (_banner != null)
+            SizedBox(
+              height: _banner!.size.height.toDouble(),
+              width: _banner!.size.width.toDouble(),
+              child: AdWidget(ad: _banner!),
+            ),
+        ],
       ),
     );
   }
+}
+
+class _WatchEmptyState extends StatelessWidget {
+  final bool refreshing;
+  const _WatchEmptyState({required this.refreshing});
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Text(
+            refreshing
+                ? 'Refreshing Watch discovery...'
+                : 'Watch channels are not available offline yet.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
 }

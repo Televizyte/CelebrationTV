@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import '../services/remote_config_service.dart';
+
+import '../features/appshub/bootstrap_store.dart';
+import '../features/hub/renderer/hub_section_renderer.dart';
 import '../services/admob_service.dart';
-import 'videos_screen.dart';
-import 'live_screen.dart';
+import '../services/remote_config_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final ValueChanged<String> onNavigate;
+
+  const HomeScreen({super.key, required this.onNavigate});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final rc = RemoteConfigService();
-  final List<NativeAd> _nativeAds = [];
-  final List<bool> _loaded = [];
+  final RemoteConfigService _remoteConfig = RemoteConfigService();
+  final List<NativeAd> _nativeAds = <NativeAd>[];
+  final List<bool> _loaded = <bool>[];
   BannerAd? _banner;
 
   @override
@@ -27,12 +31,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _prepareNativeAds() {
-    if (!rc.enableNative) return;
-    // Preload several native ads for insertion after every N items.
-    for (int i = 0; i < 6; i++) {
+    if (!_remoteConfig.enableNative) return;
+    for (var index = 0; index < 6; index++) {
       _loaded.add(false);
+      final adIndex = index;
       final ad = AdMobService.instance.createNative(
-        onLoaded: () => setState(() => _loaded[i] = true),
+        onLoaded: () {
+          if (mounted && adIndex < _loaded.length) {
+            setState(() => _loaded[adIndex] = true);
+          }
+        },
         onFailed: (_) {},
       );
       if (ad != null) {
@@ -53,42 +61,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final playlists = rc.playlists;
-    final nFreq = rc.nativeFrequency; // 3 from Remote Config
-
-    // Build list items + insert native ad after every nFreq items.
-    final tiles = <Widget>[];
-    int nativeIndex = 0;
-
-    for (int i = 0; i < playlists.length; i++) {
-      final p = playlists[i];
-      tiles.add(
-        ListTile(
-          leading: const Icon(Icons.playlist_play),
-          title: Text(p['title'] ?? 'Playlist'),
-          onTap: () {
-            AdMobService.instance
-                .maybeShowInterstitial(context, reason: 'open_playlist');
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => VideosScreen(initialUrl: p['ytPlaylistUrl']),
-              ),
-            );
-          },
-        ),
+    final store = CelebrationBootstrapScope.of(context);
+    final sections = store.hub('home').sections;
+    final children = <Widget>[];
+    var adIndex = 0;
+    for (var index = 0; index < sections.length; index++) {
+      children.add(
+        HubSectionRenderer(
+            section: sections[index], onNavigate: widget.onNavigate),
       );
-
-      final shouldInsertNative =
-          rc.enableNative && nFreq > 0 && ((i + 1) % nFreq == 0);
-      if (shouldInsertNative && nativeIndex < _nativeAds.length) {
-        final idx = nativeIndex++; // pick next preloaded ad
-        tiles.add(
+      children.add(const SizedBox(height: 22));
+      final frequency = _remoteConfig.nativeFrequency;
+      if (_remoteConfig.enableNative &&
+          frequency > 0 &&
+          (index + 1) % frequency == 0 &&
+          adIndex < _nativeAds.length) {
+        final current = adIndex++;
+        children.add(
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
             child: SizedBox(
               height: 120,
-              child: _loaded[idx]
-                  ? AdWidget(ad: _nativeAds[idx])
+              child: _loaded[current]
+                  ? AdWidget(ad: _nativeAds[current])
                   : const Center(child: CircularProgressIndicator()),
             ),
           ),
@@ -98,24 +93,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return SafeArea(
       child: Column(
-        children: [
-          ListTile(
-            title: Text(
-              rc.heroTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            trailing: ElevatedButton(
-              onPressed: () {
-                // Don’t show interstitial when going to Live (video content).
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const LiveScreen()),
-                );
-              },
-              child: const Text('Watch Live'),
-            ),
+        children: <Widget>[
+          Expanded(
+            child: sections.isEmpty
+                ? _HomeEmptyState(refreshing: store.hubRefreshing('home'))
+                : RefreshIndicator(
+                    onRefresh: () => store.refreshHub('home'),
+                    child: ListView(
+                      padding: const EdgeInsets.only(top: 14, bottom: 24),
+                      children: children,
+                    ),
+                  ),
           ),
-          const Divider(),
-          Expanded(child: ListView(children: tiles)),
           if (_banner != null)
             SizedBox(
               height: _banner!.size.height.toDouble(),
@@ -126,4 +115,22 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class _HomeEmptyState extends StatelessWidget {
+  final bool refreshing;
+  const _HomeEmptyState({required this.refreshing});
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Text(
+            refreshing
+                ? 'Refreshing Celebration TV Home...'
+                : 'Home content is not available offline yet.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
 }

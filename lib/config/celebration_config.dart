@@ -20,6 +20,8 @@ abstract final class CelebrationConfig {
 
   static const cacheNamespace = 'dxm.$appSlug';
   static const bootstrapCacheKey = '$cacheNamespace.hub.bootstrap.cache.v1';
+  static String hubCacheKey(String tab) =>
+      '$cacheNamespace.hub.${tab.trim().toLowerCase()}.cache.v1';
   static const notificationTopicNamespace = 'celebration_tv';
 
   static const bundledIdentity = <String, dynamic>{

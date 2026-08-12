@@ -9,6 +9,7 @@ import '../features/devotional/screens/devotional_quotes_screen.dart';
 import '../features/devotional/screens/devotional_read_screen.dart';
 import '../features/devotional/screens/devotional_watch_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/explore_screen.dart';
 import '../screens/inspire_screen.dart';
 import '../screens/live_screen.dart';
 import '../screens/more_screen.dart';
@@ -203,10 +204,10 @@ class CelebrationShell extends StatelessWidget {
       body: IndexedStack(
         index: CanonicalTab.values.indexOf(effectiveSelection),
         children: <Widget>[
-          const HomeScreen(),
-          const LiveScreen(),
+          HomeScreen(onNavigate: onNavigate),
+          LiveScreen(onNavigate: onNavigate),
           InspireScreen(onNavigate: onNavigate),
-          const _ExploreRootScreen(),
+          ExploreScreen(onNavigate: onNavigate),
           const MoreScreen(),
         ],
       ),
@@ -221,25 +222,6 @@ class CelebrationShell extends StatelessWidget {
               label: tab.label,
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _ExploreRootScreen extends StatelessWidget {
-  const _ExploreRootScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SafeArea(
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'Explore engines will appear here as AppsHub capabilities are enabled.',
-            textAlign: TextAlign.center,
-          ),
-        ),
       ),
     );
   }

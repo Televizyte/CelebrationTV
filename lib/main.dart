@@ -39,9 +39,27 @@ void main() async {
     ),
   );
   await bootstrapStore.loadCached();
+  await Future.wait(<Future<void>>[
+    bootstrapStore.loadCachedHub('home'),
+    bootstrapStore.loadCachedHub('watch'),
+    bootstrapStore.loadCachedHub('inspire'),
+    bootstrapStore.loadCachedHub('explore'),
+    bootstrapStore.loadCachedHub('more'),
+  ]);
 
   runApp(CelebrationTvApp(bootstrapStore: bootstrapStore));
+
   unawaited(bootstrapStore.refresh());
+
+  for (final tab in const <String>[
+    'home',
+    'watch',
+    'inspire',
+    'explore',
+    'more',
+  ]) {
+    unawaited(bootstrapStore.refreshHub(tab));
+  }
 }
 
 class CelebrationTvApp extends StatefulWidget {

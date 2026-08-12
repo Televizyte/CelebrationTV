@@ -147,7 +147,17 @@ abstract final class AppRouteContract {
     final normalized = normalize(path);
     return rootPaths.contains(normalized) ||
         placeholderPaths.contains(normalized) ||
-        devotionalRoute(normalized) != null;
+        devotionalRoute(normalized) != null ||
+        watchRoute(normalized) != null;
+  }
+
+  static WatchRouteMatch? watchRoute(String path) {
+    final normalized = normalize(path);
+    final match = RegExp(
+      r'^/watch/(channels|playlists|videos|live)/([a-z0-9]+(?:-[a-z0-9]+)*)$',
+    ).firstMatch(normalized);
+    if (match == null) return null;
+    return WatchRouteMatch(collection: match.group(1)!, slug: match.group(2)!);
   }
 
   static DevotionalRouteMatch? devotionalRoute(String path) {
@@ -171,6 +181,7 @@ abstract final class AppRouteContract {
     final normalized = normalize(path);
     final root = CanonicalTab.fromPath(normalized);
     if (root != null) return root;
+    if (normalized.startsWith('/watch/')) return CanonicalTab.watch;
     if (normalized.startsWith('/articles') ||
         normalized.startsWith('/short-videos') ||
         normalized.startsWith('/quotes') ||
@@ -185,6 +196,13 @@ abstract final class AppRouteContract {
     }
     return CanonicalTab.more;
   }
+}
+
+class WatchRouteMatch {
+  final String collection;
+  final String slug;
+
+  const WatchRouteMatch({required this.collection, required this.slug});
 }
 
 class DevotionalRouteMatch {
